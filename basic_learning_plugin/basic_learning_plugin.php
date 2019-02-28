@@ -14,26 +14,38 @@ License: GPLv2 or later
 Text Domain: basic_learning_plugin
 */
 
+defined('ABSPATH') or die();
+
 class MyPlugin
 {
+  function __construct() {
+      add_action('init', array( $this, 'custom_post_type'));
+  }
+
 	function activate() {
-		echo ‘Plugin was activated’;
 		// generated a CPT
+    &this->custom_post_type();
 		// flush rewrite rules
+    flush_rewrite_rules(); //TODO: Check function
 	}
 
 	function deactivate() {
-		echo ‘Plugin was deactivated’;
 		//flush rewrite rules
+    flush_rewrite_rules();
 	}
 
 	function uninstall() {
 		// delte CPT
 		// delte all the plugin data from the DB
 	}
+
+  // Function to gernate custom post type
+  function custom_post_type() {
+    register_post_type('book', ['public' => true, 'label' => 'Michi Plugin' ] );
+  }
 }
 
-if (class_exists(‘MeinPlugin’)) {
+if (class_exists(MyPlugin)) {
   $myPlugin = new MyPlugin();
 }
 
@@ -44,3 +56,4 @@ register_activation_hook(__FILE__, array($myPlugin, ‘activate’));   // Need 
 register_deactivation_hook(__FILE__, array($myPlugin, ‘deactivate’));
 
 // unistall
+// register_deactivation_hook(__FILE__, array($myPlugin, 'uninstall'));
