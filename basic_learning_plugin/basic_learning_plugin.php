@@ -8,7 +8,7 @@ Plugin Name: Basic Plugin
 Plugin URI: https://michael-schmidt.de/plugin
 Description: Plugin to learn the basics
 Version: 1.0.0
-Author: Michael schmidt
+Author: Michael Schmidt
 Author URI: https://michael-schmidt.de
 License: GPLv2 or later
 Text Domain: basic_learning_plugin
@@ -18,16 +18,33 @@ defined('ABSPATH') or die();
 
 class MyPlugin
 {
+  // Public
+  // can be accessed from everywhere
+
+  // Protected
+  // can be accessed only within the class itself or extensions of that class
+
+  // Private
+  // can be accessed only within the class itself
+
   // Normally contruct is only for initilizing for instance variable and not trigger actions
   function __construct() {
-      add_action('init', array( $this, 'custom_post_type'));
   }
 
-  function register() {
-    add_action('admin_enqueue_scripts', array($this, 'enqueue'));
+  function register_admin_scripts() {
+    add_action('admin_enqueue_scripts', array($this, 'enqueue')); //Loads file WP Dashboard
   }
 
-	function activate() {
+  // Also has to be called when creating Object
+  // function register_wp_scritps() {
+  //   add_action('wp_enqueue_scripts', array($this, 'enqueue')); //Loads file WP Dashboard
+  // }
+
+  protected function create_post_type() {
+    add_action('init', array($this, 'custom_post_type'));
+  }
+
+	public static function activate() {
 		// generated a CPT
     $this->custom_post_type();
 		// flush rewrite rules
@@ -46,19 +63,34 @@ class MyPlugin
 
   // Function to gernate custom post type
   function custom_post_type() {
-    register_post_type('book', ['public' => true, 'label' => 'Michi Plugin' ] );
+    register_post_type('book', ['public' => true, 'label' => 'Michi Plugin']);
   }
 
   function enqueue() {
     // enqueue all our scripts
-    // TODO: Check function
+    // TODO: Check function (__FILE__ starting point to look for the files)
     wp_enqueue_style('mypluginstyle', plugins_url('/assets/mystyle.css', __FILE__));
+    wp_enqueue_style('mypluginscript', plugins_url('/assets/myscripts.js', __FILE__));
   }
 }
 
-if (class_exists(MyPlugin)) {
+// Second class example for showcasing how to call protected method
+class SecondClass extends MyPlugin
+{
+  function register_post_type() {
+    $this->create_post_type();
+  }
+}
+
+if (class_exists('MyPlugin')) {
   $myPlugin = new MyPlugin();
-  $myPlugin->register();
+  $myPlugin->register_admin_scripts();
+}
+
+// Also default constructor is being called !important!
+if (class_exists('SecondClass')) {
+  $secondClass = new SecondClass();
+  $secondClass->register_post_type();
 }
 
 // activation
