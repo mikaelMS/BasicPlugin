@@ -14,91 +14,101 @@ License: GPLv2 or later
 Text Domain: basic_learning_plugin
 */
 
+/*
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+Copyright 2005-2015 Automattic, Inc.
+*/
+
 defined('ABSPATH') or die();
 
-class MyPlugin
-{
-  // Public
-  // can be accessed from everywhere
+if (!class_exists('MyPlugin')) {
 
-  // Protected
-  // can be accessed only within the class itself or extensions of that class
+  class MyPlugin
+  {
+    // Public
+    // can be accessed from everywhere
 
-  // Private
-  // can be accessed only within the class itself
+    // Protected
+    // can be accessed only within the class itself or extensions of that class
 
-  // Normally contruct is only for initilizing for instance variable and not trigger actions
-  function __construct() {
+    // Private
+    // can be accessed only within the class itself
+
+    // Static
+
+    // Normally contruct is only for initilizing for instance variable and not trigger actions
+    function __construct() {
+    }
+
+    public static function register_admin_scripts() {
+      add_action('admin_enqueue_scripts', array('MyPlugin', 'enqueue')); //Loads file WP Dashboard
+    }
+
+    // Also has to be called when creating Object
+    // function register_wp_scritps() {
+    //   add_action('wp_enqueue_scripts', array($this, 'enqueue')); //Loads file WP Dashboard
+    // }
+
+    protected function create_post_type() {
+      add_action('init', array($this, 'custom_post_type'));
+    }
+
+  	// public static function activate() {
+  	// 	// generated a CPT
+    //   $this->custom_post_type();
+  	// 	// flush rewrite rules
+    //   flush_rewrite_rules(); //TODO: Check function
+  	// }
+
+  	// function deactivate() {
+  	// 	//flush rewrite rules
+    //   flush_rewrite_rules();
+  	// }
+
+  	function uninstall() {
+  		// delte CPT
+  		// delte all the plugin data from the DB
+  	}
+
+    // Function to gernate custom post type
+    function custom_post_type() {
+      register_post_type('book', ['public' => true, 'label' => 'Michi Plugin']);
+    }
+
+    function enqueue() {
+      // enqueue all our scripts
+      // TODO: Check function (__FILE__ starting point to look for the files)
+      wp_enqueue_style('mypluginstyle', plugins_url('/assets/mystyle.css', __FILE__));
+      wp_enqueue_style('mypluginscript', plugins_url('/assets/myscripts.js', __FILE__));
+    }
+
+    function activate() {
+      require_once plugin_dir_path(__FILE__) . 'includes/activate_BLP.php';
+      BlpActivate::activate();
+    }
   }
 
-  function register_admin_scripts() {
-    add_action('admin_enqueue_scripts', array($this, 'enqueue')); //Loads file WP Dashboard
-  }
-
-  // Also has to be called when creating Object
-  // function register_wp_scritps() {
-  //   add_action('wp_enqueue_scripts', array($this, 'enqueue')); //Loads file WP Dashboard
-  // }
-
-  protected function create_post_type() {
-    add_action('init', array($this, 'custom_post_type'));
-  }
-
-	public static function activate() {
-		// generated a CPT
-    $this->custom_post_type();
-		// flush rewrite rules
-    flush_rewrite_rules(); //TODO: Check function
-	}
-
-	function deactivate() {
-		//flush rewrite rules
-    flush_rewrite_rules();
-	}
-
-	function uninstall() {
-		// delte CPT
-		// delte all the plugin data from the DB
-	}
-
-  // Function to gernate custom post type
-  function custom_post_type() {
-    register_post_type('book', ['public' => true, 'label' => 'Michi Plugin']);
-  }
-
-  function enqueue() {
-    // enqueue all our scripts
-    // TODO: Check function (__FILE__ starting point to look for the files)
-    wp_enqueue_style('mypluginstyle', plugins_url('/assets/mystyle.css', __FILE__));
-    wp_enqueue_style('mypluginscript', plugins_url('/assets/myscripts.js', __FILE__));
-  }
-}
-
-// Second class example for showcasing how to call protected method
-class SecondClass extends MyPlugin
-{
-  function register_post_type() {
-    $this->create_post_type();
-  }
-}
-
-if (class_exists('MyPlugin')) {
   $myPlugin = new MyPlugin();
   $myPlugin->register_admin_scripts();
+
+  // activation (Changed first array var from $myPlugin to BasicLearningPluginActivate)
+  register_activation_hook(__FILE__, array($myPlugin, 'activate'));   // Need a function, but activate is in MeinPlugin -> array
+
+  // deactivation
+  require_once plugin_dir_path(__FILE__) . 'includes/deactivate_BLP.php';
+  register_deactivation_hook(__FILE__, array('BlpDeactivate', 'deactivate'));
+
+  // unistall
+  // Alternativ to making an uninstall.php file, but function need to be static
+  // register_deactivation_hook(__FILE__, array($myPlugin, 'uninstall'));
 }
-
-// Also default constructor is being called !important!
-if (class_exists('SecondClass')) {
-  $secondClass = new SecondClass();
-  $secondClass->register_post_type();
-}
-
-// activation
-register_activation_hook(__FILE__, array($myPlugin, ‘activate’));   // Need a function, but activate is in MeinPlugin -> array
-
-// deactivation
-register_deactivation_hook(__FILE__, array($myPlugin, ‘deactivate’));
-
-// unistall
-// Alternativ to making an uninstall.php file, but function need to be static
-// register_deactivation_hook(__FILE__, array($myPlugin, 'uninstall'));
