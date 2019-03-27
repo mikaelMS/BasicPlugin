@@ -1,0 +1,17 @@
+{
+    "name": "michael_schmidt/basic_learning_plugin",
+    "description": "Basic learning Plugin",
+    "type": "project",
+    "license": "GPL",
+    "authors": [
+        {
+            "name": "mikaelMS",
+            "email": "schmidt.m.work@googlemail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+      "psr-4": {"Includes\\": "./includes"}
+    }
+}

@@ -29,86 +29,81 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 Copyright 2005-2015 Automattic, Inc.
 */
 
-defined('ABSPATH') or die();
+// Used to secure view from outside
+defined( 'ABSPATH' ) or die;
 
-if (!class_exists('MyPlugin')) {
+if (file_exists( dirname(__FILE__) . '/vendor/autoload.php')) {
+  require_once dirname(__FILE__) . '/vendor/autoload.php';
+}
 
-  class MyPlugin
-  {
-    // Public
-    // can be accessed from everywhere
+use Includes\Activate;
+use Includes\Deactivate;
+use Includes\AdminPages;
 
-    // Protected
-    // can be accessed only within the class itself or extensions of that class
+if ( !class_exists( 'MyPlugin' )) {
+	class MyPlugin
+	{
+    public $plugin_name;
 
-    // Private
-    // can be accessed only within the class itself
-
-    // Static
-
-    // Normally contruct is only for initilizing for instance variable and not trigger actions
     function __construct() {
+      $this->plugin_name = plugin_basename(__FILE__);
     }
 
-    public static function register_admin_scripts() {
-      add_action('admin_enqueue_scripts', array('MyPlugin', 'enqueue')); //Loads file WP Dashboard
+		function register_admin_scripts() {
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ));
+
+      add_action('admin_menu', array($this, 'add_admin_pages'));
+
+      add_filter("plugin_action_links_$this->plugin_name", array($this, 'settings_link'));
+		}
+
+    public function settings_link($links) {
+      // add custom settings link
+      // href for directory path, we created a admin.php and not options-general
+      $settings_link = '<a href="admin.php?page=basic_learning_plugin">Michi Settings<a/>';
+      array_push($links, $settings_link);
+
+      return $links;
     }
 
-    // Also has to be called when creating Object
-    // function register_wp_scritps() {
-    //   add_action('wp_enqueue_scripts', array($this, 'enqueue')); //Loads file WP Dashboard
-    // }
-
-    protected function create_post_type() {
-      add_action('init', array($this, 'custom_post_type'));
+    public function add_admin_pages() {
+      // TODO: Check out function
+      add_menu_page('Michi Plugin', 'Michi', 'manage_options', 'basic_learning_plugin'
+      , array($this, 'admin_index'), 'dashicons-palmtree', 110);
     }
 
-  	// public static function activate() {
-  	// 	// generated a CPT
-    //   $this->custom_post_type();
-  	// 	// flush rewrite rules
-    //   flush_rewrite_rules(); //TODO: Check function
-  	// }
-
-  	// function deactivate() {
-  	// 	//flush rewrite rules
-    //   flush_rewrite_rules();
-  	// }
-
-  	function uninstall() {
-  		// delte CPT
-  		// delte all the plugin data from the DB
-  	}
-
-    // Function to gernate custom post type
-    function custom_post_type() {
-      register_post_type('book', ['public' => true, 'label' => 'Michi Plugin']);
+    public function admin_index() {
+      // requires template
+      require_once plugin_dir_path( __FILE__ ) . 'templates/admin.php';
     }
 
-    function enqueue() {
-      // enqueue all our scripts
-      // TODO: Check function (__FILE__ starting point to look for the files)
-      wp_enqueue_style('mypluginstyle', plugins_url('/assets/mystyle.css', __FILE__));
-      wp_enqueue_style('mypluginscript', plugins_url('/assets/myscripts.js', __FILE__));
-    }
+		protected function create_post_type() {
+			add_action( 'init', array( $this, 'custom_post_type' ) );
+		}
 
-    function activate() {
-      require_once plugin_dir_path(__FILE__) . 'includes/activate_BLP.php';
-      BlpActivate::activate();
-    }
-  }
+		function custom_post_type() {
+			register_post_type( 'book', ['public' => true, 'label' => 'Books'] );
+		}
 
-  $myPlugin = new MyPlugin();
-  $myPlugin->register_admin_scripts();
+		function enqueue() {
+			// enqueue all our scripts
+			wp_enqueue_style( 'mypluginstyle', plugins_url( '/assets/mystyle.css', __FILE__ ));
+			wp_enqueue_script( 'mypluginscript', plugins_url( '/assets/myscript.js', __FILE__ ));
+		}
 
-  // activation (Changed first array var from $myPlugin to BasicLearningPluginActivate)
-  register_activation_hook(__FILE__, array($myPlugin, 'activate'));   // Need a function, but activate is in MeinPlugin -> array
+		function activate() {
+			// require_once plugin_dir_path( __FILE__ ) . 'includes/activate_BLP.php';
+			Activate::activate();
+		}
+	}
 
-  // deactivation
-  require_once plugin_dir_path(__FILE__) . 'includes/deactivate_BLP.php';
-  register_deactivation_hook(__FILE__, array('BlpDeactivate', 'deactivate'));
+	$myPlugin = new MyPlugin();
+	$myPlugin->register_admin_scripts();
 
-  // unistall
-  // Alternativ to making an uninstall.php file, but function need to be static
-  // register_deactivation_hook(__FILE__, array($myPlugin, 'uninstall'));
+	// activation
+	register_activation_hook( __FILE__, array( $myPlugin, 'activate' ) );
+
+	// deactivation
+	// require_once plugin_dir_path( __FILE__ ) . 'includes/deactivate_BLP.php';
+	register_deactivation_hook( __FILE__, array( 'Deactivate', 'deactivate' ) );
 }
