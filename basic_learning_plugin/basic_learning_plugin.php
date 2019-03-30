@@ -36,10 +36,25 @@ if (file_exists( dirname(__FILE__) . '/vendor/autoload.php')) {
   require_once dirname(__FILE__) . '/vendor/autoload.php';
 }
 
-// Can only be used be requires to include files
 define('PLUGIN_PATH', plugin_dir_path(__FILE__));
-
 define('PLUGIN_URL', plugin_dir_url(__FILE__));
+define('PLUGIN_NAME', plugin_basename(__FILE__));
+
+// Hooks need ot be registered outside of classes
+use Includes\Base\Activate;
+use Includes\Base\Deactivate;
+
+function activate_my_plugin() {
+  Activate::activate();
+}
+
+function deactivate_my_plugin() {
+  Deactivate::deactivate();
+}
+
+// Activation and deactivation hook to trigger procedural methods that call them
+register_activation_hook(__FILE__, 'activate_my_plugin');
+register_deactivation_hook(__FILE__, 'deactivate_my_plugin');
 
 // Calling through auto includes
 if (class_exists('Includes\\Init')) {
