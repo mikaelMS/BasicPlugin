@@ -3,7 +3,7 @@
 * @package LearningPlugin
 */
 
-namespace Includes;
+namespace Includes\Base;
 
 class Activate
 {
