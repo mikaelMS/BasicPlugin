@@ -32,24 +32,17 @@ Copyright 2005-2015 Automattic, Inc.
 // Used to secure view from outside
 defined('ABSPATH') or die;
 
+// Require once the Composer Autoload
 if (file_exists( dirname(__FILE__) . '/vendor/autoload.php')) {
   require_once dirname(__FILE__) . '/vendor/autoload.php';
 }
 
-define('PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('PLUGIN_URL', plugin_dir_url(__FILE__));
-define('PLUGIN_NAME', plugin_basename(__FILE__));
-
-// Hooks need ot be registered outside of classes
-use Includes\Base\Activate;
-use Includes\Base\Deactivate;
-
+// Hooks need to be initilized outside the class
 function activate_my_plugin() {
-  Activate::activate();
+  Includes\Base\Activate::activate();
 }
-
 function deactivate_my_plugin() {
-  Deactivate::deactivate();
+  Includes\Base\Deactivate::deactivate();
 }
 
 // Activation and deactivation hook to trigger procedural methods that call them
